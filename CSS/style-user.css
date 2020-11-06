@@ -1,0 +1,24 @@
+#button-searchadvance {
+	width : 200px;
+	height : 25px;
+}
+#rekomendasi-judul{
+	margin-left : 10px;
+}
+#advancesearch{
+	cursor : pointer; 
+	
+}
+
+.menu-open{
+	text-align : center;
+}
+
+.active.treeview{
+ height : 0px; 
+}
+
+
+#dialog-confirm{
+	display : none;
+}

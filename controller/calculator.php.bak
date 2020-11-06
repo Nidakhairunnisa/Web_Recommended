@@ -1,0 +1,470 @@
+<?php
+
+function printKeterangan($judul1, $judul2, $dataSim){
+	
+	echo "<pre>";
+	echo "buku " . $judul1 . " dan " . $judul2;
+	echo "bernilai = " . $dataSim['genre'] . ",";
+	echo $dataSim['penerbit'] . ",";
+	echo $dataSim['pengarang'] . " === " . $dataSim['score']; 
+	echo "</pre>";
+}
+
+function isEquals($nomorA, $nomorB){
+	if($nomorA == $nomorB){
+		return 1;
+	}
+		return 0;
+}
+
+function getAverageRate($matrix, $orang){
+		
+		$jumlahBuku = 0;
+		$nilaiRataFinal = 0;
+		$nilai=0;
+		
+		foreach($matrix as $nama=>$dataArray){
+			
+			if($nama == $orang){
+			
+				foreach($dataArray as $judul=>$rate){
+					$nilai+=$rate;
+				}
+			
+			$jumlahBuku = sizeof($dataArray);
+			}
+			
+		}
+		if($jumlahBuku > 0){
+		$nilaiRataFinal = number_format((float)($nilai/$jumlahBuku), 2, '.', '');;
+		}
+		
+		
+		return $nilaiRataFinal;
+}
+
+	
+function getCosineSimilarity1Person($matrix){
+	
+	$simCons = 0;
+	
+	$judulCheck = "";
+	$dataBuku= array();
+	$ru = 1;
+	
+	// get to know the books name first
+	foreach($matrix as $nama=>$dataArray){
+		
+		foreach($dataArray as $judul=>$rate){
+			
+			if($judul != 'average'){
+				// karena last key itu ialah averageRate
+				$ru *= $rate-$dataArray['average'];
+			}else{
+				return $ru;
+			}
+			
+		}
+		
+	}
+	
+}
+
+function getAllBooks($matrix){
+	
+	$allBooksName = array();
+	
+	foreach ($matrix as $nama=>$dataArray){
+		foreach ($dataArray as $judul=>$rate){
+			
+			// jika bukan average, 
+			// maka ini ialah buku dan rate
+			if($judul != 'average'){
+				
+				// periksa dulu apakah nama judul buku ini sudah pernah 
+				// masuk list? jika blm maka masukkan.
+				if(!in_array($judul, $allBooksName)){
+					$allBooksName[] = $judul;
+				}
+			}
+			
+		}
+	}
+	
+	return $allBooksName;
+	
+}
+
+function getAllPersons($matrix){
+	
+	$allPersonName = array();
+	
+	foreach ($matrix as $nama=>$dataArray){
+			
+			// jika bukan average, 
+			// maka ini ialah buku dan rate
+			if(!in_array($nama, $allPersonName)){
+				$allPersonName[] = $nama;
+			}
+	}
+	
+	return $allPersonName;
+}
+
+function shiftOneData(){
+	$anArray = array();
+	
+	$anArray[] = null;
+	
+	return $anArray;
+}
+
+function addDataToArray($oneData, $arrayBox){
+	if(in_array($oneData, $arrayBox)){
+		//do nothing id already exits 
+	} else {
+		//otherwise let's combine
+		$arrayBox[] = $oneData;
+	}
+	return $arrayBox;
+}
+
+function getAllAttributes($dataMentahSQL, $showName=false){
+	global $dataGenre;
+	global $dataPenerbit;
+	global $dataPengarang;
+	global $dataJudulBuku;
+	global $matrixBookOri;
+	
+	
+	
+	$dataJudulBuku = shiftOneData();
+	$dataPengarang = shiftOneData();
+	$dataPenerbit = shiftOneData();
+	$dataGenre = shiftOneData();
+	
+	while($row = mysqli_fetch_array($dataMentahSQL)){
+		$namaPengarang = $row['pengarang_buku'];
+		$namaPenerbit = $row['penerbit'];
+		$namaGenre = $row['genre'];
+		$namaJudul = $row['judul_buku'];
+		
+		$dataPengarang = addDataToArray($namaPengarang, $dataPengarang);
+		$dataPenerbit = addDataToArray($namaPenerbit, $dataPenerbit);
+		$dataGenre = addDataToArray($namaGenre, $dataGenre);
+		$dataJudulBuku = addDataToArray($namaJudul, $dataJudulBuku);
+		
+		$dataAttribute = array();
+		if($showName == false){
+			$dataAttribute['genre'] = getIndex($namaGenre, $dataGenre);
+			$dataAttribute['penerbit'] = getIndex($namaPenerbit, $dataPenerbit);
+			$dataAttribute['pengarang'] = getIndex($namaPengarang, $dataPengarang);
+			$dataAttribute['judul'] = getIndex($namaJudul, $dataJudulBuku);
+		} else{
+			$dataAttribute['genre'] = $namaGenre;
+			$dataAttribute['penerbit'] = $namaPenerbit;
+			$dataAttribute['pengarang'] = $namaPengarang;
+			$dataAttribute['judul'] = $namaJudul;
+		}	
+		
+		$matrixBookOri[$namaJudul] = $dataAttribute;
+		}
+}
+
+function getRate($namaOrang, $judulBuku, $matrix){
+	
+	$nilai=0;
+	
+	foreach($matrix as $nama=>$anotherData){
+		foreach($anotherData as $judul=>$score)
+		if($namaOrang == $nama && $judulBuku == $judul){
+			$nilai = $score;
+		}
+	}
+	return $nilai;
+}
+
+function getIndex($nilai, $arrayBox){
+	$post = 0;
+	
+	foreach($arrayBox as $value){
+		if($value == $nilai){
+			return $post;
+		}
+		
+	$post++;
+	}
+	return -1;
+}
+
+function simCombination(){
+	//menghasilkan dengan presentase 60% terhadap sim lama
+	//menghasilkan dengan presentase 40% terhadap sim atribut
+	// lalu dijalankan 
+	
+	//$simAttribute = ;
+}
+function createBookMatrix($dataMentahSQL){
+	$matrix = array();
+	$innerData = array();
+	
+	while($row = mysqli_fetch_array($dataMentahSQL)){
+		$judul = $row['judul_buku'];
+		$innerData['genre'] = $row['genre'];
+		$innerData['penerbit'] = $row['penerbit'];
+		$innerData['pengarang_buku'] = $row['pengarang_buku'];
+		
+		$matrix[$judul] = $innerData;
+		
+		$innerData = array();
+	}
+	return $matrix;
+}
+
+function similarityAttributes(){
+	global $matrixBookOri;
+	
+	$dataMatrixScore = array();
+	
+	foreach($matrixBookOri as $judulBuku=>$data){
+		//echo $judulBuku . "---".$data ."<br>";
+		$dataMatrixScore = similarityAttribute($judulBuku, $data);
+	}
+	
+	return $dataMatrixScore;
+}
+
+function similarityAttribute($judulBuku1, $dataAttribute){
+	
+	global $matrixBookOri;
+	
+	$scoreGenre=0;
+	$scorePenerbit=0;
+	$scorePengarang=0;
+	$scoreJudul=0;
+	$indexJudul=0;
+	$indexGenre=0;
+	$indexPenerbit=0;
+	$indexPengarang=0;
+	
+	$matrixScore = array();
+	
+	
+	$indexGenre = $dataAttribute['genre'];
+	$indexPenerbit = $dataAttribute['penerbit'];
+	$indexPengarang = $dataAttribute['pengarang'];
+	$indexJudul = $dataAttribute['judul'];
+	
+	foreach($matrixBookOri as $judulBuku=>$data){
+		foreach($data as $attribute => $index){
+			if($attribute == 'genre'){
+				$scoreGenre = isEquals($indexGenre, $index);
+			}
+			if($attribute == 'penerbit'){
+				$scorePenerbit = isEquals($indexPenerbit, $index);
+			}
+			if($attribute == 'pengarang'){
+				$scorePengarang = isEquals($indexPengarang, $index);
+			}
+			if($attribute == 'judul'){
+				$scoreJudul = isEquals($indexJudul, $index);
+			}
+		}
+			$dataSim = array();
+			$dataSim['genre'] = $scoreGenre;
+			$dataSim['penerbit'] = $scorePenerbit;
+			$dataSim['pengarang'] = $scorePengarang;
+			$dataSim['judul'] = $scoreJudul;
+			$hasil= ($scoreJudul*0.837)+($scoreGenre*0.054)+($scorePenerbit*0.116)+($scorePengarang*0.558);
+			$dataSim['score'] = $hasil;
+			$matrixScore[$judulBuku1][$judulBuku] = $dataSim;
+			
+			//printKeterangan($judulBuku1, $judulBuku, $dataSim);
+	}
+	
+	return $matrixScore;
+}
+function combinePersonAndBook($dataPerson, $dataBook, $matrix){
+	$dataResult1 = array();
+	foreach($dataPerson as $namaOrang){
+		
+		foreach($dataBook as $judulBuku){
+			//kita siapkan data buku dan orang 
+			// dengan score rate 0 dulu
+			$nilaiRate = getRate($namaOrang, $judulBuku, $matrix);
+			$dataResult[$namaOrang][$judulBuku] = $nilaiRate;
+			
+		}
+	}
+	return $dataResult;
+}
+
+function sim($i,$j) {
+    global $dataSiap;
+	global $dataPerson;
+	global $dataBooks;
+	//print_r($dataBooks);
+	$item1 = 0;
+    $item2 = 0;
+	$ujung = count($dataBooks)-1;
+	
+
+    // calculate the sums for the ith and jth items
+    // minus each users' avg rating.
+	
+    for ($index = 0; $index < count($dataSiap); $index++) {
+		
+		$nama = $dataPerson[$index];
+		
+		if ($index == 0 || $index==$ujung){
+			if (count($dataSiap) > 0){
+				$avgDt = array_sum($dataSiap[$nama])/count($dataSiap);
+
+				$item1 += ($dataSiap[$nama][$i] - $avgDt);
+				$item2 += ($dataSiap[$nama][$j] - $avgDt);
+			}
+		}
+    }
+
+	//echo 'item1 : '.$item1.' >> '.$item2.'<br>';
+
+    $res =  ($item1+$item2)/(sqrt($item1*$item1)*sqrt($item2*$item2));
+    return $res;
+}
+
+function weightSum($namaOrang, $judulBuku){
+	// datasiap data orang dan buku beserta rate
+	global $dataSiap;
+	global $dataPerson;
+	global $dataBooks;
+	global $dataSimAll;
+	
+	
+	$jumlahSkRate = 0;
+	$jumlahAbsolut = 0;
+	
+	$hasilAkhir;
+	
+	for ($index = 0; $index < count($dataSiap); $index++) {
+		
+		foreach($dataBooks as $judul){
+			if($judul != $judulBuku){
+				$skorRate = $dataSiap[$namaOrang][$judul];
+
+					$jumlahSkRate += $skorRate * $dataSimAll[$judulBuku][$judul];
+					$jumlahAbsolut += abs ($dataSimAll[$judulBuku][$judul]);
+				}	
+				
+		}
+		$skorRate = $dataSiap[$namaOrang][$judulBuku];
+		
+		
+				
+    }
+	$hasilAkhir = $jumlahSkRate/$jumlahAbsolut;
+	return $hasilAkhir;
+}
+
+function weightSumAll($namaOrang){
+	
+	global $dataBooks;
+
+	
+	$dataRekomendasiAkhir = array();
+
+	
+	$jumlahSkRate 	= 0;
+	$jumlahAbsolut 	= 0;
+	
+	$hasilAkhir;
+	if (!empty($dataBooks)){
+		$j=0;
+		foreach($dataBooks as $judul){
+				
+			$hasilAkhir = weightSum($namaOrang, $judul);
+			if ($hasilAkhir >= 0 && $j < 10){
+				$dataRekomendasiAkhir[$judul] = $hasilAkhir;
+			}
+			
+			$j++;
+			
+		}
+	}
+		arsort($dataRekomendasiAkhir);
+		return $dataRekomendasiAkhir;
+	
+}
+
+function getAllSim(){
+	//menghitung similarity masing-masing buku terhadap keseluruhan 
+	global $dataBooks;
+	
+	$dataBukuComplete = array();
+	$hasilSim = array();
+	foreach($dataBooks as $judul){
+	
+		foreach($dataBooks as $judulKedua){
+			if($judul != $judulKedua){
+				$hasilSim[$judul][$judulKedua] = sim($judul, $judulKedua);
+			}
+		}
+	}
+	return $hasilSim;
+}
+
+
+function getPersonIdenticalBook($matrix, $bookList){
+	
+	$member = array();
+	
+	foreach($bookList as $judulDoang){
+		
+		foreach($matrix as $nama=>$dataArray){
+			
+			foreach($dataArray as $judul=>$rate){
+				if($judul == $judulDoang){
+					//$Orangscore[$nama] = $rate;
+					$data[$judul] = $rate;
+					$member[$judul][$nama] = $data;
+				}
+			}
+			
+		}
+		
+	}
+	
+	return $member;
+	
+}
+
+function getAdjustConSimilar($book1, $book2, $matrix){
+
+	//iterate from matrix for 2 books// from each member 
+	
+	$rateAverageSinglePerson = 0;
+	$totalSmaSinglePerson = 0;
+	$multipySinglePerson = 0;
+	$rootSingleBook1 = 0;
+	$rootSingleBook2 = 0;
+	$multipyRoot = 0;
+	$endingDivision = 0;
+
+
+	foreach($matrix as $nama=>$dataArray){
+
+			foreach($dataArray as $judul=>$rate){
+			
+			
+				if ($judul == 'average'){
+					// mengambil
+					$rateAverageSinglePerson = $rate;
+				}
+			}
+	}	
+ 	
+	
+}
+
+
+
+?>

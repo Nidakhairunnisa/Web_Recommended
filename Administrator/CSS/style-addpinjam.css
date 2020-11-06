@@ -1,0 +1,25 @@
+span[status='terlewat'] {
+	background-color : red !important; 
+	
+}
+
+span[status='dipinjam'] {
+	background-color : yellow !important; 
+	color : black;
+}
+
+span[status='dikembalikan'] {
+	background-color : green !important; 
+}
+
+
+
+.tombol-status:hover{
+	cursor: pointer;
+	
+}
+
+.tombol-status{
+	color : white;
+}
+	

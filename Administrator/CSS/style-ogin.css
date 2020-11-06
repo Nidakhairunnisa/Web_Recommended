@@ -1,0 +1,21 @@
+h3{
+	color: black;
+    font-size: 35px;
+}
+
+form {
+	border-style : solid;
+	width : 354px;
+	height: 300px;
+	background-color: #c6e2ff;
+	padding: 10px;
+}
+
+img{
+	width: 60px;
+	height: 60px;
+}
+
+.warning{
+	color : red;
+}

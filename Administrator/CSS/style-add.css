@@ -1,0 +1,24 @@
+.container-utama{
+	border-style: solid;
+	height: 800px;
+	padding: 10px;
+	margin-left : 300px;
+}
+
+.kiri, .kanan{
+	width: 300px;
+	float: left;
+}
+
+.kanan-full{
+	margin-top	: 20px;
+	width: 300px;
+	float: right;
+}
+
+form, .container-utama{
+	width : 500px; 
+	height : 600px;
+	background-color: red;
+	margin-left: 400px;
+}
